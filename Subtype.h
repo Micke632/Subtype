@@ -13,21 +13,17 @@ class Subtype
 		if (val > MAX || val < MIN) throw std::out_of_range("");
 	}
 
-	UNDERLYING add(UNDERLYING a, UNDERLYING b)
-	{
-		UNDERLYING temp = 0;
-		temp = a + b;
-		return temp;
+	UNDERLYING add(UNDERLYING a, UNDERLYING b) const
+	{	
+		return a + b;
 	}
 
-	UNDERLYING sub(UNDERLYING a, UNDERLYING b)
+	UNDERLYING sub(UNDERLYING a, UNDERLYING b) const
 	{
-		UNDERLYING temp = 0;
-		temp = a - b;
-		return temp;
+		return a - b;
 	}
 
-	//private constructor for temporiaries
+
 	explicit Subtype(UNDERLYING val, bool)
 	{
 		value = val;
@@ -71,20 +67,26 @@ public:
 		return *this;
 	}
 
+
 	//////////////////////////////////
 	//+ and += operator
 	///////////////////////////
-	Subtype operator+(const Subtype &other)
-	{
-		UNDERLYING val = add(this->value, other.value);
-		return Subtype(val, false); //dont check value
-	}
+
+	//delete + operator
+	//to avoid a scenario like
+	//SubType<int,1,10> t(10)
+	//auto x = t+t;
+	//so todo int sum = t+t;
+	//int sum = t,getValue()+t,getValue();
+
+	const Subtype operator+(const Subtype &other) const = delete;		
 
 
-	Subtype operator+(UNDERLYING other)
+	const Subtype operator+(UNDERLYING other) const
 	{
-		UNDERLYING val = add(this->value, other);
-		return Subtype(val, false);		//dont check value
+		auto val = add(this->value, other);
+		return Subtype(val,false);
+	
 	}
 
 
@@ -105,17 +107,13 @@ public:
 	//////////////////////////////////
 	//- and -= operator
 	///////////////////////////
-	Subtype operator-(const Subtype &other)
-	{
-		UNDERLYING val = sub(this->value, other.value);
-		return Subtype(val, false);		//dont check value
-	}
+	const Subtype operator-(const Subtype &other) const = delete;
 
 
-	Subtype operator-(UNDERLYING other)
-	{
-		UNDERLYING val = sub(this->value, other);
-		return Subtype(val, false);		//dont check value
+	const Subtype operator-(UNDERLYING other) const 
+	{	
+		auto val = sub(this->value, other);
+		return Subtype(val, false);
 	}
 
 
@@ -158,34 +156,23 @@ public:
 		return value == other.value;
 	}
 
-
-
-	bool operator==(UNDERLYING val) const
+	bool operator!=(const Subtype &other)  const
 	{
-		return value == val;
+		return value != other.value;
 	}
 
-
-
-
-	bool operator!=(UNDERLYING val) const
-	{
-		return value != val;
-	}
-
-
-
-	UNDERLYING getMax() const
+	constexpr UNDERLYING getMax() const
 	{
 		return MAX;
 	}
-	UNDERLYING getMin() const
+	constexpr UNDERLYING getMin() const
 	{
 		return MIN;
 	}
 
 	operator UNDERLYING() const { return value; }
 
+	UNDERLYING getValue() const { return value; }
 
 
 
