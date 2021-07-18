@@ -2,15 +2,30 @@
 
 
 
+#if !defined(SUBTYPE_NO_THROW)
+#   include <stdexcept>
+#   define OUT_OF_RANGE() throw std::out_of_range("")
+#else
+#   
+#   define OUT_OF_RANGE() ;
+#endif
+
+
+
 template <typename UNDERLYING, UNDERLYING MIN, UNDERLYING MAX>
 class Subtype
 {
 
 	static_assert(MAX > MIN);
 
-	constexpr void check(UNDERLYING val)
+	constexpr bool check(UNDERLYING val)
 	{
-		if (val > MAX || val < MIN) throw std::out_of_range("");
+		if (val > MAX || val < MIN)
+		{
+			OUT_OF_RANGE();
+			return false;
+		}
+		return true;
 	}
 
 	UNDERLYING add(UNDERLYING a, UNDERLYING b) const
@@ -39,31 +54,29 @@ public:
 
 	explicit Subtype(UNDERLYING val)
 	{
-
-		check(val);
-		value = val;
-
+		if (check(val))
+			value = val;
 	}
 
 	Subtype(const Subtype &other)
 	{
-		check(other.value);
-		value = other.value;
+		if (check(other.value))
+			value = other.value;
 
 	}
 
 	Subtype &operator=(const Subtype &other)
 	{
-		check(other.value);
-		value = other.value;
+		if (check(other.value))
+			value = other.value;
 		return *this;
 	}
 
 
 	Subtype &operator=(UNDERLYING val)
 	{
-		check(val);
-		value = val;
+		if (check(val))
+			value = val;
 		return *this;
 	}
 
@@ -72,12 +85,13 @@ public:
 	//+ and += operator
 	///////////////////////////
 
-	//delete + operator
+	//deleted + operator
 	//to avoid a scenario like
 	//SubType<int,1,10> t(10)
-	//auto x = t+t;
-	//so todo int sum = t+t;
-	//int sum = t,getValue()+t,getValue();
+	//SubType<int,1,10> x = t+t which is overflow but not thrown
+	//so when doing for instance:
+	//int sum = t + t   getValue() must be used:
+	//int sum = t.getValue()+t.getValue();
 
 	const Subtype operator+(const Subtype &other) const = delete;		
 
